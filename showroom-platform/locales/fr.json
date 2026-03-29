@@ -1,0 +1,19 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "cars": "Voitures",
+    "about": "À propos",
+    "contact": "Contact"
+  },
+  "home": {
+    "title": "Des voitures premium en toute confiance",
+    "subtitle": "Découvrez les meilleurs véhicules neufs et d'occasion en Algérie"
+  },
+  "car": {
+    "price": "Prix",
+    "year": "Année",
+    "mileage": "Kilométrage",
+    "fuel": "Carburant",
+    "transmission": "Transmission"
+  }
+}

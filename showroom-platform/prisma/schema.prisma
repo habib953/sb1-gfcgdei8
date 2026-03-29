@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Language {
+  ar
+  fr
+}
+
+enum FuelType {
+  petrol
+  diesel
+  hybrid
+  electric
+}
+
+enum TransmissionType {
+  manual
+  automatic
+}
+
+enum CarStatus {
+  available
+  sold
+}
+
+model Showroom {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  phone       String?
+  whatsapp    String?
+  city        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  brands      Brand[]
+  cars        Car[]
+  admins      Admin[]
+  leads       Lead[]
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  showroomId   String
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  role         String   @default("manager")
+  createdAt    DateTime @default(now())
+
+  showroom     Showroom @relation(fields: [showroomId], references: [id], onDelete: Cascade)
+
+  @@index([showroomId])
+}
+
+model Brand {
+  id         String   @id @default(cuid())
+  showroomId String
+  name       String
+  slug       String
+  logoUrl    String?
+
+  showroom   Showroom @relation(fields: [showroomId], references: [id], onDelete: Cascade)
+  cars       Car[]
+
+  @@unique([showroomId, slug])
+  @@index([showroomId])
+}
+
+model Car {
+  id            String           @id @default(cuid())
+  showroomId    String
+  brandId       String
+  model         String
+  slug          String
+  year          Int
+  priceDzd      Int
+  mileageKm     Int
+  fuel          FuelType
+  transmission  TransmissionType
+  status        CarStatus        @default(available)
+  featured      Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  showroom      Showroom         @relation(fields: [showroomId], references: [id], onDelete: Cascade)
+  brand         Brand            @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  images        CarImage[]
+  translations  CarTranslation[]
+  leads         Lead[]
+
+  @@unique([showroomId, slug])
+  @@index([showroomId, brandId, year])
+  @@index([showroomId, priceDzd])
+  @@index([showroomId, mileageKm])
+}
+
+model CarImage {
+  id         String   @id @default(cuid())
+  carId       String
+  showroomId  String
+  imageUrl    String
+  publicId    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  car         Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  @@index([carId, sortOrder])
+  @@index([showroomId])
+}
+
+model CarTranslation {
+  id          String   @id @default(cuid())
+  carId       String
+  language    Language
+  title       String
+  description String
+
+  car         Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  @@unique([carId, language])
+  @@index([language])
+}
+
+model Lead {
+  id           String   @id @default(cuid())
+  showroomId   String
+  carId        String?
+  fullName     String
+  phone        String
+  email        String?
+  message      String?
+  locale       Language
+  createdAt    DateTime @default(now())
+
+  showroom     Showroom @relation(fields: [showroomId], references: [id], onDelete: Cascade)
+  car          Car?     @relation(fields: [carId], references: [id], onDelete: SetNull)
+
+  @@index([showroomId, createdAt])
+  @@index([carId])
+}
